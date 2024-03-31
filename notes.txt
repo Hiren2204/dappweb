@@ -1,0 +1,27 @@
+1.login : rail,student,clg
+
+stude:
+form:conession detail submit
+
+clg:
+stu-request: table: name email src dest dur input num submit
+rail: req input-num numbers,table : ind , unique num
+
+
+rail admin:
+
+req: table: clg name,no.con num, send
+
+
+
+1.connect firestore
+2.conession details save 
+3. display req on clg panel 
+4. clg req display on rail  panel
+5. genrate array of number each of 6 digit that is not in firestore 
+
+
+
+
+
+
