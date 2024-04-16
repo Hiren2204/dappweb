@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Container, Typography, TextField, Checkbox, FormControlLabel, Button, Box, Select, MenuItem } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+
 function Login() {
   const [loginType, setLoginType] = useState("student"); // Default login type
   let navigate= useNavigate();
@@ -8,6 +9,10 @@ function Login() {
   const [registerNumber, setRegisterNumber] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState(false);
+  const [registerNumberError, setRegisterNumberError] = useState(false);
+  const [usernameError, setUsernameError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
 
   const handleEmailChange = (event) => {
     setEmail(event.target.value);
@@ -28,23 +33,33 @@ function Login() {
   const handleSubmit = (event) => {
     event.preventDefault();
 
+    // Validate fields
+    setEmailError(email === "");
+    setRegisterNumberError(registerNumber === "");
+    setUsernameError(username === "");
+    setPasswordError(password === "");
+
     // Logic based on login type
     switch (loginType) {
       case "student":
-        console.log(`Student login submitted: Email - ${email}, Register Number - ${registerNumber}, Password - ${password}`);
-        navigate("/stu", { state: { registerNumber } });
+        if (email && registerNumber && password) {
+          console.log(`Student login submitted: Email - ${email}, Register Number - ${registerNumber}, Password - ${password}`);
+          navigate("/stu", { state: { registerNumber } });
+        }
         break;
       case "railway":
-        console.log(`Railway login submitted: Username - ${username}, Password - ${password}`);
-        navigate("/ral");
+        if (username && password) {
+          console.log(`Railway login submitted: Username - ${username}, Password - ${password}`);
+          navigate("/ral");
+        }
         break;
       case "college":
-        console.log(`College login submitted: College Name - ${username}, Username - ${username}, Password - ${password}`);
-        if(username === "SAKEC" && password === "123456"){
-          navigate("/clg", { state: { username } });
+        if (username && password) {
+          console.log(`College login submitted: College Name - ${username}, Username - ${username}, Password - ${password}`);
+          if(username === "SAKEC" && password === "123456"){
+            navigate("/clg", { state: { username } });
+          }
         }
-        
-
         break;
       default:
         break;
@@ -77,7 +92,10 @@ function Login() {
                 margin="normal"
                 value={email}
                 onChange={handleEmailChange}
+                error={emailError}
+                helperText={emailError && "Email is required"}
                 style={{ width: "100%", marginBottom: "20px" }}
+                required
               />
               <TextField
                 label="Register Number"
@@ -85,7 +103,10 @@ function Login() {
                 margin="normal"
                 value={registerNumber}
                 onChange={handleRegisterNumberChange}
+                error={registerNumberError}
+                helperText={registerNumberError && "Register Number is required"}
                 style={{ width: "100%", marginBottom: "20px" }}
+                required
               />
             </>
           )}
@@ -96,7 +117,10 @@ function Login() {
               margin="normal"
               value={username}
               onChange={handleUsernameChange}
+              error={usernameError}
+              helperText={usernameError && (loginType === "railway" ? "Username is required" : "College Name is required")}
               style={{ width: "100%", marginBottom: "20px" }}
+              required
             />
           )}
           <TextField
@@ -106,7 +130,10 @@ function Login() {
             margin="normal"
             value={password}
             onChange={handlePasswordChange}
+            error={passwordError}
+            helperText={passwordError && "Password is required"}
             style={{ width: "100%", marginBottom: "20px" }}
+            required
           />
           <Button type="submit" variant="contained" color="primary" size="large" style={{ width: "100%" }}>
             Login

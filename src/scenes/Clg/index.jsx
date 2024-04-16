@@ -6,12 +6,13 @@ import Header from "../../components/Header";
 import { useLocation } from "react-router-dom";
 import { collection, getDocs, doc, getFirestore, addDoc, deleteDoc } from "firebase/firestore";
 import { useTheme } from "@mui/material/styles"; // Import useTheme
-import {  getDoc ,setDoc } from "firebase/firestore";
+import {  getDoc ,setDoc,updateDoc, arrayRemove } from "firebase/firestore";
+import { FieldValue } from "firebase/firestore";
 
 const Clg = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const [consignmentNumberOptions, setConsignmentNumberOptions] = useState([]);
+  let [consignmentNumberOptions, setConsignmentNumberOptions] = useState([1,2]);
   const { state: { username } } = useLocation(); // Extract username from location state
 
   const [rows, setRows] = useState([]);
@@ -54,12 +55,12 @@ const Clg = () => {
 
   
 const handleDropdownChange = (event, row) => {
-  const selectedValue = event.target.value;
-  // Update the 'row' object with the selected consignment number
+  const selectedValue = parseInt(event.target.value);
+  // // Update the 'row' object with the selected consignment number
   const updatedRow = { ...row, consignmentNumber: selectedValue };
-  // Remove the selected value from options
-  const updatedOptions = consignmentNumberOptions.filter(option => option !== selectedValue);
-  setConsignmentNumberOptions(updatedOptions);
+  // // Remove the selected value from options
+  // const updatedOptions = consignmentNumberOptions.filter(option => option !== selectedValue);
+  // setConsignmentNumberOptions(updatedOptions);
 
   // Update the 'rows' state with the updated 'row'
   const updatedRows = rows.map(r => (r.id === row.id ? updatedRow : r));
@@ -70,50 +71,39 @@ const handleDropdownChange = (event, row) => {
 };
 
 const submitRequest = async (row) => {
-  let clgname = username;
   console.log(row.registernum);
   try {
     const db = getFirestore();
     const clgname = username; // Assuming clgname is the same as username
-    
-    // Reference to the consignment numbers document
-    const consignmentNumRef = doc(db, "University/SeasonalBooking", clgname, clgname);
+
+    //Storng doc at clg-con/response/
     const docReff = doc(db, `Clg-Con/response/${row.registernum}/${row.registernum}`);
-    const reqRef = doc(db,`Clg-Con/clg/${clgname}/${row.registernum}`);
     await setDoc(docReff,{"number":row.consignmentNumber});
-    // Set the consignment number in the University/SeasonalBooking document
-    await setDoc(consignmentNumRef, { [row.consignmentNumber]: true }, { merge: true });
-    console.log(reqRef);
-    // Fetch the consignment numbers array from the Clg-Con document
-    const clgConRef = doc(db, "Clg-Con", "clg", clgname, clgname);
-    const clgConDoc = await getDoc(clgConRef);
 
-    if (clgConDoc.exists()) {
-      const clgConData = clgConDoc.data();
+    // storing at university
+    const consignmentNumRef = doc(db, "University/SeasonalBooking", clgname, clgname);
+    await setDoc(consignmentNumRef, { [row.consignmentNumber]: false }, { merge: true });
 
-      // // Remove the consignment number from the array
-      // const updatedNumbers = clgConData.numbers.filter(num => num !== row.consignmentNumber);
-      
-      // // Update the Clg-Con document with the updated array
-      // await setDoc(clgConRef, { numbers: updatedNumbers });
+    //Deleting request
+    const regReq = doc(db,`Clg-Con/Student/${clgname}/${row.registernum}`);
+    await deleteDoc(regReq);
 
-      // Delete the row from the table
-      await deleteDoc(doc(db, "Clg-Con", "clg", clgname, row.id));
-      await deleteDoc(reqRef);
+    const selectedValue = parseInt(row.consignmentNumber);
+  const updatedOptions = consignmentNumberOptions.filter(option => option !== selectedValue);
+  await setConsignmentNumberOptions(updatedOptions);
 
-      // Remove the selected consignment number from options
-      const updatedOptions = consignmentNumberOptions.filter(option => option !== row.consignmentNumber);
-      setConsignmentNumberOptions(updatedOptions);
+  console.log(updatedOptions);
 
-      // Remove the row from the state
-      const updatedRows = rows.filter(r => r.id !== row.id);
-      setRows(updatedRows);
-      
+    //updating exsisting array in firestore
+    const arrDoc = doc(db,`Clg-Con/clg/${clgname}/${clgname}`);
+    await updateDoc(arrDoc,{ Numbers: updatedOptions });
 
-      console.log(`Request processed for row with ID ${row.id}`);
-    } else {
-      console.error("Clg-Con document does not exist.");
-    }
+    
+
+
+    const updatedRows = rows.filter(r => r.id !== row.id);
+    setRows(updatedRows);
+
   } catch (error) {
     console.error("Error processing request:", error);
   }

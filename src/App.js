@@ -3,11 +3,14 @@ import { Routes, Route } from "react-router-dom";
 import Clg from "./scenes/Clg";
 import Stu from "./scenes/Stu";
 import RAL from "./scenes/RAL";
+// import DropdownPage from "./scenes/Test";
+
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { ColorModeContext, useMode } from "./theme";
 import Login from "./scenes/Login/Login";
 import { initializeApp } from "firebase/app";
 import { getFirestore, doc, setDoc } from "firebase/firestore";
+import DropdownPage from "./scenes/Test/test";
 const firebaseConfig = {
   apiKey: "AIzaSyArk7JKtGDyrJUz-OsfHzEXp4JfqWLewog",
   authDomain: "safarkar-7e056.firebaseapp.com",
@@ -40,6 +43,7 @@ function App() {
               <Route path="/stu" element={<Stu />} />
               <Route path="/ral" element={<RAL />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/test" element={<DropdownPage />} />
             </Routes>
           </main>
         </div>
